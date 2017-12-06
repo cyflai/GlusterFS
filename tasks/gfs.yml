@@ -17,14 +17,14 @@
 
   - name: update search domain
     lineinfile:
-      path: /etc/network/interfaces
+      dest: /etc/network/interfaces
       line: "dns-search {{ domain }}"
       insertafter: EOF
       state: present
 
   - name: update hosts file
     lineinfile:
-      path: /etc/hosts
+      dest: /etc/hosts
       regexp: '^.*127.0.1.1.*'
       line: "127.0.1.1   {{ ansible_hostname }}.{{ domain }} {{ ansible_hostname }}"
       insertafter: '^.*127.0.0.1.*'
