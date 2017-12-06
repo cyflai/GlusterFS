@@ -1,0 +1,62 @@
+---
+  - apt_repository:
+      repo: ppa:gluster/glusterfs-3.12
+      state: present
+      update_cache: yes
+    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+  - name: GFS Installation
+    package:
+      name: "{{ item }}"
+      state: latest 
+    with_items:
+      - software-properties-common
+      - glusterfs-server 
+      - glusterfs-client 
+    #  - mknod /dev/fuse c 10 229
+
+  - name: update search domain
+    lineinfile:
+      path: /etc/network/interfaces
+      line: "dns-search {{ domain }}"
+      insertafter: EOF
+      state: present
+
+  - name: update hosts file
+    lineinfile:
+      path: /etc/hosts
+      regexp: '^.*127.0.1.1.*'
+      line: "127.0.1.1   {{ ansible_hostname }}.{{ domain }} {{ ansible_hostname }}"
+      insertafter: '^.*127.0.0.1.*'
+      state: present
+      #backrefs: yes
+
+  - name: probe gluster
+    shell: gluster peer probe {{ item }}
+    with_items:
+      - "{{ groups['gluster_nodes'] }}"
+    when:
+      - item != groups['gluster_nodes'][0]
+    run_once: yes
+    delegate_to: "{{ groups['gluster_nodes'][0] }}"
+
+  - name:  prepare gluster volume create command
+    set_fact:
+      gluster_cmd: "{{ gluster_cmd }}{{ item }}:/var/gluster-storage "
+    with_items:  "{{ groups['gluster_nodes'] }}"
+    run_once: yes
+
+  - pause:
+     seconds: 20
+
+  - name: Create gluser volume 1
+    shell: gluster volume create volume1 replica 3 transport tcp {{ gluster_cmd }} force
+    run_once: yes
+
+  - file:
+      mode: 0777
+      state: directory
+      path: /var/gluster-storage	
+
+  - shell: gluster volume start volume1
+    run_once: yes

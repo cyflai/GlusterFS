@@ -1,0 +1,25 @@
+---
+
+- hosts: gluster_nodes
+
+  vars:
+    - domain: poc
+    - gluster_cmd:
+
+  tasks:
+
+  - name: update hosts file
+    lineinfile:
+      path: /etc/hosts
+      line:  "{{ hostvars[item]['ansible_default_ipv4']['address'] }} {{ item }}"
+      insertafter: EOF
+    with_items: 
+         - "{{ groups['gluster_nodes'] }}"  
+    when: item != ansible_hostname
+
+  - name: install gfs
+    include: tasks/gfs.yml
+
+  - name: result
+    debug:
+      msg: "{{ ansible_hostname }} -> {{ ansible_host }}"
