@@ -56,7 +56,7 @@
   - file:
       mode: 0777
       state: directory
-      path: /var/gluster-storage
+      dest: /var/gluster-storage
       
   - shell: gluster volume start volume1
     run_once: yes
