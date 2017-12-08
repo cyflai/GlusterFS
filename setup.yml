@@ -15,7 +15,7 @@
       insertafter: EOF
     with_items: 
          - "{{ groups['gluster_nodes'] }}"  
-    when: item != ansible_hostname
+    when: item != inventory_hostname
 
   - name: install gfs
     include: tasks/gfs.yml
