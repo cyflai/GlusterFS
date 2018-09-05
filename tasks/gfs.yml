@@ -26,7 +26,7 @@
     lineinfile:
       dest: /etc/hosts
       regexp: '^.*127.0.1.1.*'
-      line: "127.0.1.1   {{ inventory_hostname }}.{{ domain }} {{ ansible_hostname }}"
+      line: "127.0.1.1   {{ inventory_hostname }}.{{ domain }} {{ inventory_hostname }}"
       insertafter: '^.*127.0.0.1.*'
       state: present
       #backrefs: yes
